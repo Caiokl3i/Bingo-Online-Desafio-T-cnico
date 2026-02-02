@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { users } from '../models/userModel.js';
 
-const JWT_SECRET = 'segredo_temporario';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function register(req, res) {
     const { name, email, password } = req.body;

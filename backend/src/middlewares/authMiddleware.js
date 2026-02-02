@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = 'segredo_temporario';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
