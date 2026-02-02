@@ -1,28 +1,20 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { users } from '../models/userModel.js';
+import { createUser, findByEmail } from '../models/userModel.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function register(req, res) {
     const { name, email, password } = req.body;
 
-    const userExists = users.find(u => u.email === email);
+    const userExists = await findByEmail(email);
     if (userExists) {
         return res.status(400).json({ message: 'Usuário já existe' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = {
-        id: users.length + 1,
-        name,
-        email,
-        password: hashedPassword,
-        isAdmin: false
-    };
-
-    users.push(newUser);
+    await createUser({ name, email, password: hashedPassword });
 
     res.status(201).json({ message: 'Usuário cadastrado com sucesso' });
 }
@@ -30,7 +22,8 @@ export async function register(req, res) {
 export async function login(req, res) {
     const { email, password } = req.body;
 
-    const user = users.find(u => u.email === email);
+    const user = await findByEmail(email);
+    
     if (!user) {
         return res.status(401).json({ message: 'Credenciais inválidas' });
     }

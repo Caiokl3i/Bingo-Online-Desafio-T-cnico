@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  isAdmin BOOLEAN DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS bingos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  prize TEXT NOT NULL,
+  status TEXT NOT NULL,
+  drawnNumbers TEXT,
+  winner INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS cards (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  bingo_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  numbers TEXT,
+  marked_numbers TEXT,
+  FOREIGN KEY (bingo_id) REFERENCES bingos(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
