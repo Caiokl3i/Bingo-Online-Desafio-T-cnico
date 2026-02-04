@@ -5,18 +5,24 @@ import api from "../services/api";
 import { checkWin } from "../utils/bingoUtils";
 import "./BingoGame.css";
 
+// Componente principal do jogo: gerencia estado em tempo real, sorteio e interação da cartela.
+
 export default function BingoGame() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // Estados do jogo e do usuário
   const [bingo, setBingo] = useState(null);
   const [card, setCard] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasWon, setHasWon] = useState(false);
+
+  // Estados de controle do sorteio (Admin)
   const [isAutoMode, setIsAutoMode] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const [hasWon, setHasWon] = useState(false);
   const timerRef = useRef(null);
 
+  // Inicialização: Verifica permissões e configura o polling de dados (5s).
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -25,32 +31,38 @@ export default function BingoGame() {
         setIsAdmin(decoded.isAdmin);
       } catch (e) { console.error("Token inválido"); }
     }
+    
     loadGameData();
-    const syncInterval = setInterval(loadGameData, 5000);
+    const syncInterval = setInterval(loadGameData, 5000); // Polling
+    
     return () => clearInterval(syncInterval);
   }, [id]);
 
+  // Sincroniza dados da partida e da cartela com o servidor.
   const loadGameData = useCallback(async () => {
     try {
+      // Tenta entrar na sala (ou recuperar cartela existente)
       const joinData = await api.post(`/bingos/${id}/join`);
       if (joinData.card) {
         setCard(joinData.card);
+        // Verifica vitória localmente ao carregar
         const result = checkWin(joinData.card.numbers, joinData.card.markedNumbers);
         if (result.win) setHasWon(true);
       }
 
+      // Atualiza estado global do bingo (bolas sorteadas, status)
       const allBingos = await api.get("/bingos");
       const currentBingo = allBingos.find((b) => b.id === Number(id));
       setBingo(currentBingo);
 
-      if (currentBingo?.status === "finished") {
-        setIsAutoMode(false);
-      }
+      if (currentBingo?.status === "finished") setIsAutoMode(false);
+      
     } catch (err) {
       console.error("Erro ao sincronizar dados");
     }
   }, [id]);
 
+  // Ação de administrador: Sorteia uma nova bola via API.
   const executeDraw = async () => {
     if (bingo?.status === "finished") return;
 
@@ -66,6 +78,7 @@ export default function BingoGame() {
     }
   };
 
+  // Gerencia o loop do sorteio automático (Timer de 3 segundos).
   useEffect(() => {
     if (isAutoMode && isAdmin && bingo?.status !== "finished") {
       setCountdown(3);
@@ -73,7 +86,7 @@ export default function BingoGame() {
         setCountdown((prev) => {
           if (prev <= 1) {
             executeDraw();
-            return 3;
+            return 3; // Reseta timer
           }
           return prev - 1;
         });
@@ -85,6 +98,7 @@ export default function BingoGame() {
     return () => clearInterval(timerRef.current);
   }, [isAutoMode, isAdmin, bingo?.status]);
 
+  // Ação de Jogador: Marca número na cartela e checa condição de vitória imediata.
   const handleMarkNumber = async (num) => {
     if (bingo?.status === "finished") return;
 
@@ -96,12 +110,10 @@ export default function BingoGame() {
       
       if (result.win && !hasWon) {
         setHasWon(true);
+        // Identifica vencedor e notifica o servidor
         const token = localStorage.getItem("token");
-        let winnerName = "Jogador";
-        if (token) {
-            const decoded = jwtDecode(token);
-            winnerName = decoded.name || "Jogador sem nome";
-        }
+        const winnerName = token ? jwtDecode(token).name : "Jogador";
+        
         await api.patch(`/bingos/${id}/finish`, { winner: winnerName });
         alert(`🎉 BINGO! Você completou uma ${result.type}!`);
         loadGameData();
@@ -111,49 +123,41 @@ export default function BingoGame() {
     }
   };
 
-  // Última bola sorteada
   const lastNumber = bingo?.drawnNumbers?.length > 0 
     ? bingo.drawnNumbers[bingo.drawnNumbers.length - 1] 
     : "--";
 
   return (
     <div className={`game-container ${hasWon ? 'state-won' : ''}`}>
-      {/* Background Atmosférico */}
       <div className="bg-orb orb-game-1"></div>
       <div className="bg-orb orb-game-2"></div>
 
-      {/* Header do Jogo */}
+      {/* Cabeçalho: Info da Sala e Status */}
       <header className="game-glass-header">
         <div className="header-left">
-          <button className="back-link" onClick={() => navigate("/bingos")}>
-            &larr; Sair
-          </button>
+          <button className="back-link" onClick={() => navigate("/bingos")}>&larr; Sair</button>
           <div className="game-info-box">
             <span className="info-label">SALA</span>
             <span className="info-value">#{id}</span>
           </div>
         </div>
-
         <div className="header-center">
           <div className="prize-display">
             <span className="prize-icon">🏆</span>
             <span className="prize-text">{bingo?.prize}</span>
           </div>
         </div>
-
         <div className="header-right">
           <div className={`status-dot ${bingo?.status}`}></div>
           <span className="status-text">
-            {bingo?.status === 'active' ? 'AO VIVO' : 
-             bingo?.status === 'waiting' ? 'ESPERA' : 'FIM'}
+            {bingo?.status === 'active' ? 'AO VIVO' : bingo?.status === 'waiting' ? 'ESPERA' : 'FIM'}
           </span>
         </div>
       </header>
 
-      {/* Layout Dividido: Painel Sorteio (Esq) vs Cartela (Dir) */}
       <div className="game-split-layout">
         
-        {/* LADO ESQUERDO: CONTROLES E GLOBO */}
+        {/* Painel Esquerdo: Controle de Sorteio e Globo */}
         <aside className="draw-panel">
           <div className="sphere-container">
             <div className={`draw-sphere ${isAutoMode ? 'pulsing' : ''}`}>
@@ -166,9 +170,7 @@ export default function BingoGame() {
             {bingo?.status === "finished" ? (
               <span className="status-message finish">JOGO ENCERRADO</span>
             ) : isAutoMode ? (
-              <span className="status-message auto">
-                Sorteando em <span className="timer">{countdown}s</span>
-              </span>
+              <span className="status-message auto">Sorteando em <span className="timer">{countdown}s</span></span>
             ) : (
               <span className="status-message wait">Aguardando bola...</span>
             )}
@@ -182,11 +184,8 @@ export default function BingoGame() {
               >
                 {isAutoMode ? "PAUSAR AUTO" : "INICIAR AUTO"}
               </button>
-              
               {!isAutoMode && (
-                <button className="control-btn draw" onClick={executeDraw}>
-                  SORTEAR 1
-                </button>
+                <button className="control-btn draw" onClick={executeDraw}>SORTEAR 1</button>
               )}
             </div>
           )}
@@ -201,7 +200,7 @@ export default function BingoGame() {
           </div>
         </aside>
 
-        {/* LADO DIREITO: CARTELA */}
+        {/* Painel Direito: Cartela do Jogador */}
         <main className="card-panel">
           <div className="card-glass-frame">
             <div className="card-header-internal">
@@ -230,7 +229,7 @@ export default function BingoGame() {
             </div>
           </div>
 
-          {/* MENSAGEM DE VENCEDOR (OVERLAY) */}
+          {/* Overlay de Fim de Jogo */}
           {bingo?.status === "finished" && (
             <div className="winner-overlay">
               <div className="winner-content">
@@ -240,9 +239,7 @@ export default function BingoGame() {
                   <span>Vencedor:</span>
                   <strong className="winner-name">{bingo?.winner || "---"}</strong>
                 </div>
-                <button className="exit-btn" onClick={() => navigate("/bingos")}>
-                  Voltar ao Lobby
-                </button>
+                <button className="exit-btn" onClick={() => navigate("/bingos")}>Voltar ao Lobby</button>
               </div>
             </div>
           )}

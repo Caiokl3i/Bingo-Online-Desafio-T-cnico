@@ -1,5 +1,6 @@
 import axios from "axios";
 
+// Configuração da instância Axios para comunicação com o backend.
 const api = axios.create({
   baseURL: "http://localhost:3000",
   headers: {
@@ -7,7 +8,7 @@ const api = axios.create({
   }
 });
 
-// Interceptor para colocar o token automaticamente
+// Interceptor de Requisição: Injeta o token JWT no header Authorization automaticamente.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
@@ -18,9 +19,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor de erro (opcional, mas poderoso)
+// Interceptor de Resposta: Retorna diretamente o corpo da resposta (data) para o frontend.
 api.interceptors.response.use(
-  (response) => response.data, // Garante que o front receba direto o array/objeto
+  (response) => response.data,
   (error) => Promise.reject(error)
 );
 

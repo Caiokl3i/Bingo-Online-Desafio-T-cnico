@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./BingoCreate.css";
 
+// Componente de formulário para criação de novas salas de Bingo (Apenas Admins).
+
 export default function BingoCreate() {
   const [prize, setPrize] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
 
+  // Envia os dados para a API e redireciona o usuário para a lista de jogos.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -17,9 +19,9 @@ export default function BingoCreate() {
 
     try {
       await api.post("/bingos/create", { prize });
-      navigate("/bingos"); // volta para lista
+      navigate("/bingos");
     } catch (err) {
-      setError("Erro ao criar bingo");
+      setError("Erro ao criar bingo. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -27,7 +29,6 @@ export default function BingoCreate() {
 
   return (
     <div className="create-layout">
-      {/* Background Atmosférico */}
       <div className="bg-orb orb-create-1"></div>
       <div className="bg-orb orb-create-2"></div>
 
@@ -55,20 +56,11 @@ export default function BingoCreate() {
           </div>
 
           <div className="form-actions">
-            <button
-              type="button"
-              className="btn-cancel"
-              onClick={() => navigate("/bingos")}
-              disabled={loading}
-            >
+            <button type="button" className="btn-cancel" onClick={() => navigate("/bingos")} disabled={loading}>
               Cancelar
             </button>
             
-            <button 
-              type="submit" 
-              className="btn-submit" 
-              disabled={loading}
-            >
+            <button type="submit" className="btn-submit" disabled={loading}>
               {loading ? <span className="spinner-mini"></span> : "Lançar Sala 🚀"}
             </button>
           </div>

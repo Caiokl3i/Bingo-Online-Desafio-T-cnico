@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import api from "../services/api.js";
 import "./Register.css";
 
+// Componente de registro: Coleta dados do usuário e cria uma nova conta no sistema.
+
 export default function Register({ onRegister }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -10,6 +12,7 @@ export default function Register({ onRegister }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Envia os dados de cadastro para a API e redireciona para a tela de login.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -17,10 +20,9 @@ export default function Register({ onRegister }) {
 
     try {
       await api.post("/auth/register", { name, email, password });
-      onRegister(); // voltar para login
+      onRegister(); // Redireciona para o login após sucesso
     } catch (err) {
-      console.log(err.message);
-      setError(err.message || "Erro ao cadastrar usuário");
+      setError(err.response?.data?.message || "Erro ao cadastrar usuário");
     } finally {
       setLoading(false);
     }
@@ -28,7 +30,6 @@ export default function Register({ onRegister }) {
 
   return (
     <div className="auth-container">
-      {/* Efeitos de fundo */}
       <div className="glow-effect glow-top-left"></div>
       <div className="glow-effect glow-bottom-right"></div>
 
@@ -83,9 +84,7 @@ export default function Register({ onRegister }) {
 
           <div className="auth-footer">
             <span>Já tem conta? </span>
-            <Link to="/" className="auth-link">
-              Faça login
-            </Link>
+            <Link to="/" className="auth-link">Faça login</Link>
           </div>
         </form>
       </div>

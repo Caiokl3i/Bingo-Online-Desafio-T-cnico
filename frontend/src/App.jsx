@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-// Ajuste o import abaixo para Maiúsculo conforme o erro anterior
-import ProtectedRoute from "./components/protectedRoute";
+import ProtectedRoute from "./components/protectedRoute"; // Import ajustado para PascalCase
 import BingosPage from "./pages/BingosPage";
 import BingoCreatePage from "./pages/BingoCreatePage";
 import RegisterPage from "./pages/RegisterPage";
@@ -10,6 +9,8 @@ import BingoGamePage from "./pages/BingoGamePage";
 import UserProfilePage from "./pages/UserProfilePage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import "./App.css";
+
+// Componente Raiz: Gerencia o roteamento e o estado global de autenticação (Token).
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -22,29 +23,19 @@ export default function App() {
   };
 
   return (
-    // Removido o <BrowserRouter> daqui, pois agora ele está no main.jsx
     <Routes>
-      {/* Login */}
+      {/* --- ROTAS PÚBLICAS --- */}
       <Route
         path="/"
-        element={
-          token ? <Navigate to="/bingos" /> : <LoginPage onLogin={setToken} />
-        }
+        element={token ? <Navigate to="/bingos" /> : <LoginPage onLogin={setToken} />}
       />
 
-      {/* Register */}
       <Route
         path="/register"
-        element={
-          token ? (
-            <Navigate to="/bingos" />
-          ) : (
-            <RegisterPage onRegister={() => navigate("/")} />
-          )
-        }
+        element={token ? <Navigate to="/bingos" /> : <RegisterPage onRegister={() => navigate("/")} />}
       />
 
-      {/* Rota de Lista de Bingos (Qualquer um logado vê) */}
+      {/* --- ROTAS PROTEGIDAS (Jogadores) --- */}
       <Route
         path="/bingos"
         element={
@@ -54,27 +45,6 @@ export default function App() {
         }
       />
 
-      {/* Rota de Admin (Só admin vê) */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute token={token} adminOnly={true}>
-            <AdminDashboardPage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Rota de Criar Bingo (Só admin vê) */}
-      <Route
-        path="/bingos/create"
-        element={
-          <ProtectedRoute token={token} adminOnly={true}>
-            <BingoCreatePage />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Tela do Jogo */}
       <Route
         path="/bingos/:id"
         element={
@@ -93,16 +63,26 @@ export default function App() {
         }
       />
 
+      {/* --- ROTAS ADMINISTRATIVAS (Requer adminOnly=true) --- */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute token={token}>
+          <ProtectedRoute token={token} adminOnly={true}>
             <AdminDashboardPage />
           </ProtectedRoute>
         }
       />
 
-      {/* Fallback */}
+      <Route
+        path="/bingos/create"
+        element={
+          <ProtectedRoute token={token} adminOnly={true}>
+            <BingoCreatePage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Fallback para URLs inválidas */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

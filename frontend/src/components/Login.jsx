@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import api from "../services/api.js";
 import "./Login.css";
 
+// Componente de login: autentica o usuário, armazena o token e libera o acesso ao sistema.
+
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Envia credenciais para a API e salva a sessão no LocalStorage em caso de sucesso.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -30,7 +33,6 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="auth-container">
-      {/* Efeitos de fundo (Glows) */}
       <div className="glow-effect glow-top-left"></div>
       <div className="glow-effect glow-bottom-right"></div>
 
@@ -73,9 +75,7 @@ export default function Login({ onLogin }) {
 
           <div className="auth-footer">
             <span>Não tem conta? </span>
-            <Link to="/register" className="auth-link">
-              Cadastre-se agora
-            </Link>
+            <Link to="/register" className="auth-link">Cadastre-se agora</Link>
           </div>
         </form>
       </div>

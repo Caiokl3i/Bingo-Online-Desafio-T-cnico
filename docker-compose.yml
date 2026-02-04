@@ -1,0 +1,30 @@
+services:
+  # Serviço do Backend (Node.js + SQLite)
+  api-bingo:
+    build: ./backend
+    container_name: bingo-api-container
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app                           # Sincroniza o código (Hot-reload)
+      - /app/node_modules                        # Isola as dependências do Linux dentro do container
+      - ./backend/src/database:/app/src/database # Garante que o arquivo .db seja salvo no seu PC
+    environment:
+      - PORT=3000
+      - JWT_SECRET=senha_secreta
+      - ADMIN_EMAIL=admin@email.com
+    restart: unless-stopped
+
+  # Serviço do Frontend (React + Vite)
+  client-bingo:
+    build: ./frontend
+    container_name: bingo-client-container
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-bingo  # Espera a API iniciar antes de subir
+    volumes:
+      - ./frontend:/app          # Sincroniza edições no React em tempo real
+      - /app/node_modules        # Isola node_modules do frontend
+    environment:
+      - VITE_API_URL=http://localhost:3000

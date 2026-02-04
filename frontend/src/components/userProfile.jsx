@@ -3,11 +3,14 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./UserProfile.css";
 
+// Componente de perfil: Exibe estatísticas, jogos em andamento e histórico de partidas do usuário.
+
 export default function UserProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Busca os dados consolidados do perfil (Info pessoal + Histórico) ao carregar.
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -31,35 +34,28 @@ export default function UserProfile() {
 
   return (
     <div className="profile-layout">
-      {/* Background Atmosférico */}
       <div className="bg-orb orb-profile-1"></div>
       <div className="bg-orb orb-profile-2"></div>
 
       <header className="profile-glass-header">
-        <button className="back-btn-profile" onClick={() => navigate("/bingos")}>
-          &larr; Voltar ao Lobby
-        </button>
+        <button className="back-btn-profile" onClick={() => navigate("/bingos")}>&larr; Voltar ao Lobby</button>
         <h1>DADOS DO JOGADOR</h1>
       </header>
 
       <div className="profile-content-grid">
         
-        {/* COLUNA ESQUERDA: IDENTIDADE */}
+        {/* Painel de Identidade (Esquerda) */}
         <aside className="identity-section">
           <div className="identity-card">
             <div className="avatar-wrapper">
               <div className="avatar-glow"></div>
-              <div className="avatar-content">
-                {profile?.name?.charAt(0).toUpperCase() || "U"}
-              </div>
+              <div className="avatar-content">{profile?.name?.charAt(0).toUpperCase() || "U"}</div>
             </div>
             
             <div className="identity-info">
               <h2 className="user-name">{profile?.name}</h2>
               <span className="user-email">{profile?.email}</span>
-              <span className="user-role">
-                {profile?.isAdmin ? "ADMINISTRADOR" : "JOGADOR REGISTRADO"}
-              </span>
+              <span className="user-role">{profile?.isAdmin ? "ADMINISTRADOR" : "JOGADOR REGISTRADO"}</span>
             </div>
 
             <div className="stats-mini-grid">
@@ -75,14 +71,12 @@ export default function UserProfile() {
           </div>
         </aside>
 
-        {/* COLUNA DIREITA: ATIVIDADE */}
+        {/* Painel de Atividade (Direita) */}
         <main className="activity-section">
           
           {/* Jogos Ativos */}
           <section className="glass-panel mb-30">
-            <div className="panel-header-profile">
-              <h3>⚡ Salas em Andamento</h3>
-            </div>
+            <div className="panel-header-profile"><h3>⚡ Salas em Andamento</h3></div>
             
             {profile?.participating?.length > 0 ? (
               <div className="active-games-list">
@@ -106,22 +100,15 @@ export default function UserProfile() {
             )}
           </section>
 
-          {/* Histórico */}
+          {/* Histórico de Partidas */}
           <section className="glass-panel">
-            <div className="panel-header-profile">
-              <h3>📜 Histórico de Partidas</h3>
-            </div>
+            <div className="panel-header-profile"><h3>📜 Histórico de Partidas</h3></div>
 
             {profile?.history?.length > 0 ? (
               <div className="history-table-wrapper">
                 <table className="tech-history-table">
                   <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Prêmio</th>
-                      <th>Vencedor</th>
-                      <th>Resultado</th>
-                    </tr>
+                    <tr><th>ID</th><th>Prêmio</th><th>Vencedor</th><th>Resultado</th></tr>
                   </thead>
                   <tbody>
                     {profile.history.map((game, index) => (
@@ -140,9 +127,7 @@ export default function UserProfile() {
                 </table>
               </div>
             ) : (
-              <div className="empty-state-profile">
-                <p>Nenhuma partida finalizada no histórico.</p>
-              </div>
+              <div className="empty-state-profile"><p>Nenhuma partida finalizada no histórico.</p></div>
             )}
           </section>
 
